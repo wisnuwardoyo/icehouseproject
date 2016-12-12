@@ -1,2 +1,0 @@
-# icehouseproject
-Interview Task
