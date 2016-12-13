@@ -5,7 +5,8 @@ import javax.inject.Inject
 
 import dao.AccountDAO
 import entity.Account
-import module.EncryptionModule
+import models.session.SessionHandler
+import module.{LoginKeyUtils, EncryptionModule}
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import play.api.db._
@@ -15,7 +16,7 @@ import play.api.mvc._
 /**
  * Created by wisnuwardoyo on 12/12/16.
  */
-class LoginController @Inject() (db: Database) extends Controller{
+class LoginController @Inject() (db: Database, session: SessionHandler) extends Controller{
 
     def login = Action(parse.json) {request =>
       try{
@@ -24,8 +25,10 @@ class LoginController @Inject() (db: Database) extends Controller{
 
         val account: Account = new AccountDAO(db.getConnection(true)).login(username, password);
         if(account != null){
+          val logkey = LoginKeyUtils.getEncryptedKey(account.accountId+"")
+          session.addSession(account.accountId+"" -> logkey)
           Ok(Json.obj("status" -> "login successfull",
-            "logkey" -> (EncryptionModule.encrypt("{\"logintime\":\""+(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").print(new DateTime()))+"\"}"))
+            "logkey" -> logkey
           , "account" -> account.toJson))
         }else{
           Unauthorized(Json.obj("status" -> "login failed", "message" -> "Check your username or password"))
