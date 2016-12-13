@@ -39,15 +39,11 @@ class HomeController @Inject() (configuration: Configuration, session: SessionHa
     } else {
       try {
         var logkey = (request.body \ "logkey").asOpt[String].get
-        val json: JsValue = Json.parse(LoginKeyUtils.getDecrytedKey(logkey))
-        val loginTime = (json \ "logintime").asOpt[String].get
-        val accountId = (json \ "accountId").asOpt[String].get
-        val expiredTime = configuration.getString("apps.maxAge").get.toLong * 60 * 1000
-        val c: DateTime = new DateTime(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(loginTime))
-
-        if (new DateTime().getMillis > c.getMillis + expiredTime) {
+        val validation = LoginKeyUtils.isValid(logkey, configuration.getString("apps.maxAge").get.toLong * 60 * 1000)
+        if (!validation._1) {
           BadRequest(Json.obj("status" -> "Session Expired", "message" -> ("http://" + request.host + "/login")))
         } else {
+          val accountId = (validation._2 \ "accountId").asOpt[String].get
           if(session.checkSession(accountId -> logkey)){
             logkey = (LoginKeyUtils.getEncryptedKey(accountId))
             session.addSession(accountId -> logkey)
