@@ -2,7 +2,8 @@ package controllers
 
 import javax.inject._
 
-import module.EncryptionModule
+import models.session.SessionHandler
+import module.{LoginKeyUtils, EncryptionModule}
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import play.api.Configuration
@@ -14,7 +15,7 @@ import play.api.mvc._
  * application's home page.
  */
 @Singleton
-class HomeController @Inject() (configuration: Configuration) extends Controller {
+class HomeController @Inject() (configuration: Configuration, session: SessionHandler) extends Controller {
 
   /**
    * Create an Action to render an HTML page with a welcome message.
@@ -23,29 +24,41 @@ class HomeController @Inject() (configuration: Configuration) extends Controller
    * a path of `/`.
    */
   def index = Action {
-    val s = "{\"logintime\":\"2016-12-12 15:05:00\"}"
-    Ok(EncryptionModule.encrypt(s))
+    session.checkSession("1" -> "{logkey}")
+    Ok("")
     //Ok(views.html.index("Your new application is ready."))
   }
 
+  /**
+   * Renewing session
+   * @return
+   */
   def handshake = Action(parse.json) { request =>
     if (request == null) {
-      Unauthorized(Json.obj("Status" -> "Login Required", "message" -> ("http://" + request.host + "/login")))
+      Unauthorized(Json.obj("status" -> "Login Required", "message" -> ("http://" + request.host + "/login")))
     } else {
       try {
-        val json: JsValue = Json.parse(EncryptionModule.decrypt((request.body \ "logkey").asOpt[String].get))
+        var logkey = (request.body \ "logkey").asOpt[String].get
+        val json: JsValue = Json.parse(LoginKeyUtils.getDecrytedKey(logkey))
         val loginTime = (json \ "logintime").asOpt[String].get
+        val accountId = (json \ "accountId").asOpt[String].get
         val expiredTime = configuration.getString("apps.maxAge").get.toLong * 60 * 1000
         val c: DateTime = new DateTime(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(loginTime))
 
         if (new DateTime().getMillis > c.getMillis + expiredTime) {
-          BadRequest(Json.obj("Status" -> "Session Expired", "message" -> ("http://" + request.host + "/login")))
+          BadRequest(Json.obj("status" -> "Session Expired", "message" -> ("http://" + request.host + "/login")))
         } else {
-          Ok(c.toDate.getTime.toString + " " + expiredTime)
+          if(session.checkSession(accountId -> logkey)){
+            logkey = (LoginKeyUtils.getEncryptedKey(accountId))
+            session.addSession(accountId -> logkey)
+            Ok(Json.obj("status" -> "Handshake success", "loginkey" -> logkey))
+          }else{
+            Unauthorized(Json.obj("status" -> "Handshake Failed", "message" -> (("http://" + request.host + "/login")+" Session no longer valid")))
+          }
         }
       } catch {
         case ex: Exception => {
-          BadRequest(Json.obj("Status" -> "Handshake Failed", "message" -> ("http://" + request.host + "/login "+ex.toString)))
+          BadRequest(Json.obj("status" -> "Handshake Failed", "message" -> ("http://" + request.host + "/login "+ex.toString)))
         }
       }
     }
