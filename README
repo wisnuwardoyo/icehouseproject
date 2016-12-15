@@ -4,7 +4,7 @@ This is how to use it,
 
 1. Clone this repo
 
-2. Import / Restore icehouse.sql file is at root directory
+2. Import / Restore icehouse.sql to database with name "icehouse" file is at root directory
 
 3. cd $local_repo_dir and “sbt run”
 
