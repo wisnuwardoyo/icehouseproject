@@ -3,8 +3,9 @@ package controllers.transaction.app_highway
 import java.util.Date
 
 import com.google.inject.Inject
-import dao.{TransactionDAO, AccountDAO, MachineTariffDAO}
+import dao.{AccountDAO, MachineTariffDAO, TransactionDAO}
 import entity.{Account, MachineTariff, Transaction}
+import models.event.EventProducer
 import module.EncryptionModule
 import play.api.db.Database
 import play.api.libs.json.{JsValue, Json}
@@ -13,7 +14,7 @@ import play.api.mvc.{Action, Controller}
 /**
  * Created by wisnuwardoyo on 12/13/16.
  */
-class HighwayTransactionController @Inject()(db: Database) extends Controller {
+class HighwayTransactionController @Inject()(db: Database, event: EventProducer) extends Controller {
 
   /**
    * WS for Highway transaction
@@ -48,8 +49,7 @@ class HighwayTransactionController @Inject()(db: Database) extends Controller {
           connection.commit()
           connection.close()
 
-          //TODO : POST event
-
+          event.produceEvent(Json.obj("machineid" -> machineTariff.machineId, "status" -> "Transaction Success", "detail" -> recipe))
           Ok(Json.obj("status" -> "Transaction Success", "detail" -> recipe))
         } else {
           connection.close()
