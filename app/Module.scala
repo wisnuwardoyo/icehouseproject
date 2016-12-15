@@ -1,4 +1,5 @@
 import com.google.inject.AbstractModule
+import models.event.{EventConsumer, DefaultEventHandler, EventProducer}
 import models.session.{DefaultSessionHandler, SessionHandler}
 
 /**
@@ -8,5 +9,8 @@ class Module extends AbstractModule {
   override def configure() = {
     //Set DefaultSessionHandler as the implementation of SessionHandler
     bind(classOf[SessionHandler]).to(classOf[DefaultSessionHandler])
+    bind(classOf[EventProducer]).to(classOf[DefaultEventHandler])
+    bind(classOf[EventConsumer]).to(classOf[DefaultEventHandler])
+
   }
 }
