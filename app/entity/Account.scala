@@ -14,8 +14,10 @@ class Account {
   var accountCountryCode: String = ""
   var accountPhonenumber: String = ""
   var accountBalance: Int = 0
+  var accountStatus: Int = 0;
 
-  private def createAccount(id: Int, user: String, realName: String, address: String, countryCode: String, phoneNumber: String, balance: Int): Account = {
+  private def createAccount(id: Int, user: String, realName: String, address: String,
+                            countryCode: String, phoneNumber: String, balance: Int, status: Int): Account = {
     val account: Account = new Account
 
     account.accountId = id;
@@ -25,7 +27,7 @@ class Account {
     account.accountCountryCode = countryCode
     account.accountPhonenumber = phoneNumber
     account.accountBalance = balance
-
+    account.accountStatus = status
     return account
   }
 
@@ -36,7 +38,8 @@ class Account {
     (json \ "accountAddress").as[String],
     (json \ "accountCountrycode").as[String],
     (json \ "accountPhonenumber").as[String],
-    (json \ "accountBalance").as[Int]
+    (json \ "accountBalance").as[Int],
+    (json \ "accountStatus").as[Int]
   )
 
   def toJson: JsValue = JsObject(Seq(
@@ -46,7 +49,8 @@ class Account {
     "accountAddress" -> JsString(this.accountAddress),
     "accountCountrycode" -> JsString(this.accountCountryCode),
     "accountPhonenumber" -> JsString(this.accountPhonenumber),
-    "accountBalance" -> JsNumber(this.accountBalance)
+    "accountBalance" -> JsNumber(this.accountBalance),
+    "accountStatus" -> JsNumber(this.accountStatus)
   ))
 }
 
