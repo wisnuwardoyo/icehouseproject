@@ -25,6 +25,8 @@ class AccountDAO(connection : Connection) {
         account.accountAddress = rs.getString("account_address")
         account.accountCountryCode = rs.getString("account_countrycode")
         account.accountPhonenumber = rs.getString("account_phonenumber")
+        account.accountBalance = rs.getInt("account_balance")
+        account.accountStatus = rs.getInt("account_status")
 
         return account
       } else {

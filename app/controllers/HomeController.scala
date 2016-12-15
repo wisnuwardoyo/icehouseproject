@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject._
 
+import dao.AccountDAO
 import models.session.SessionHandler
 import module.{LoginKeyUtils, EncryptionModule}
 import org.joda.time.DateTime
@@ -47,7 +48,7 @@ class HomeController @Inject() (configuration: Configuration, session: SessionHa
           if(session.checkSession(accountId -> logkey)){
             logkey = (LoginKeyUtils.getEncryptedKey(accountId))
             session.addSession(accountId -> logkey)
-            Ok(Json.obj("status" -> "Handshake success", "loginkey" -> logkey))
+            Ok(Json.obj("status" -> "Handshake success", "logkey" -> logkey))
           }else{
             Unauthorized(Json.obj("status" -> "Handshake Failed", "message" -> (("http://" + request.host + "/login")+" Session no longer valid")))
           }
