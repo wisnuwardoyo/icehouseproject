@@ -1,49 +1,50 @@
-This is your new Play application
-=================================
+Hi, Ice house
 
-This file will be packaged with your application when using `activator dist`.
+This is how to use it,
 
-There are several demonstration files available in this template.
+1. Clone this repo
 
-Controllers
-===========
+2. Import / Restore icehouse.sql file is at root directory
 
-- HomeController.scala:
+3. cd $local_repo_dir and “sbt run”
 
-  Shows how to handle simple HTTP requests.
+4. this application default run at localhost:9000 and mysql connection at 3306.
 
-- AsyncController.scala:
+5. in case you doesn’t use point 3306 port for mysql, you can edit it at application.conf. And in case you doesn’t use localhost:9000 as your default, you must edit routes to run trx at table transaction_routes.
 
-  Shows how to do asynchronous programming when handling a request.
 
-- CountController.scala:
+AVAILABLE Command
 
-  Shows how to inject a component into a controller and use the component when
-  handling requests.
+1. Login, return a logkey, you can use for every request, sometimes logkey is changed during transaction, make sure use the last one.
 
-Components
-==========
+curl --header "Content-type: application/json" --request POST --data '{"username" : "wisnuwardoyo", "password" : "wisnuwardoyo"}' http://localhost:9000/login
 
-- Module.scala:
+example return
 
-  Shows how to use Guice to bind all the components needed by your application.
+{"status":"login successfull","logkey":"CfzJCkgtOtjNTn/Rp1akYY+tzJ2BqUhUQBWT0vyX7sZXO1uTYL8bW2e4Xl2h22VBbVlZBN+vmSXtnFwmz2zHUw==","account":{"accountId":1,"accountUser":"wisnuwardoyo","accountRealname":"Wisnu Wardoyo","accountAddress":"Jakarta","accountCountrycode":"ID","accountPhonenumber":"+6282299171396","accountBalance":0,"accountStatus":1}}
 
-- Counter.scala:
 
-  An example of a component that contains state, in this case a simple counter.
+2. Handshake, use your last logkey and return new logkey. This command can refresh your session.
 
-- ApplicationTimer.scala:
+curl --header "Content-type: application/json"  --request POST --data '{"logkey" : "CfzJCkgtOtjNTn/Rp1akYY+tzJ2BqUhUQBWT0vyX7sZXO1uTYL8bW2e4Xl2h22VBbVlZBN+vmSXtnFwmz2zHUw=="}' http://localhost:9000/begin
 
-  An example of a component that starts when the application starts and stops
-  when the application stops.
+example return
 
-Filters
-=======
+{"status":"Handshake success","logkey":"CfzJCkgtOtjNTn/Rp1akYadJ9cmbzxfVn22tWF2+um6VPKUvzHarx8M1slkKtTu0bVlZBN+vmSXtnFwmz2zHUw=="}
 
-- Filters.scala:
 
-  Creates the list of HTTP filters used by your application.
+3. Get Profile, use your last logkey and return account information. 
 
-- ExampleFilter.scala
+curl --header "Content-type: application/json"  --request POST --data '{"logkey" : "CfzJCkgtOtjNTn/Rp1akYY+tzJ2BqUhUQBWT0vyX7sZXO1uTYL8bW2e4Xl2h22VBbVlZBN+vmSXtnFwmz2zHUw=="}' http://localhost:9000/profile
 
-  A simple filter that adds a header to every response.
+example return
+
+{"status":"Get Profile success","account":{"accountId":1,"accountUser":"wisnuwardoyo","accountRealname":"Wisnu Wardoyo","accountAddress":"Jakarta","accountCountrycode":"ID","accountPhonenumber":"+6282299171396","accountBalance":0,"accountStatus":1}}
+
+4. Transaction
+
+curl -L --header "Content-type: application/json"  --request POST --data '{"trxtype":"1","trxvariable":"{\"machineid\":\"22004\"}","logkey":"CfzJCkgtOtjNTn/Rp1akYT9EsH0YxScABMB/NCcSqvpXO1uTYL8bW2e4Xl2h22VBbVlZBN+vmSXtnFwmz2zHUw=="}' http://localhost:9000/trx
+
+example return
+
+{"trxstatus":{"status":"Transaction Success","detail":{"trxTimestamp":1481802034273,"balancebefore":5000,"balanceafter":0,"amount":5000,"machineid":22004,"tarifid":2,"signature":"UZwG1vEdu6TTxOzpss1N5H/WNvi62KvDqg+7UJzEBdA="}},"logkey":"CfzJCkgtOtjNTn/Rp1akYUAKzy1zNXgdvI5am9l84/BXzNAj+hSR3ErbsDWjeaRtbVlZBN+vmSXtnFwmz2zHUw=="}

@@ -10,6 +10,7 @@ import org.joda.time.format.DateTimeFormat
 import play.api.Configuration
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
+import play.twirl.api.Html
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the
@@ -25,9 +26,7 @@ class HomeController @Inject() (configuration: Configuration, session: SessionHa
    * a path of `/`.
    */
   def index = Action {
-    session.checkSession("1" -> "{logkey}")
-    Ok("")
-    //Ok(views.html.index("Your new application is ready."))
+    Ok(views.html.main("Hello Ice House")(new Html("Hello Ice House, My Application is ready :)")))
   }
 
   /**
