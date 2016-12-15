@@ -8,6 +8,8 @@ GET     /                           controllers.HomeController.index
 POST    /begin                      controllers.HomeController.handshake
 
 POST    /login                      controllers.LoginController.login
+POST    /trx                        controllers.transaction.DefaultTranscationAcceptorController.trx
+POST    /transaction/payment/v1/toll controllers.transaction.app_highway.HighwayTransactionController.debit
 
 
 # Map static resources from the /public folder to the /assets URL path
